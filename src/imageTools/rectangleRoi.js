@@ -169,7 +169,13 @@ function onImageRendered (e) {
     }
 
     // Check which color the rendered tool should be
-    const color = toolColors.getColorIfActive(data.active);
+    let color = toolColors.getToolColor();
+    if (data.color) {
+      color = data.color;
+    }
+    if (data.active) {
+      color = toolColors.getActiveColor();
+    }
 
     // Convert Image coordinates to Canvas coordinates given the element
     const handleStartCanvas = cornerstone.pixelToCanvas(element, data.handles.start);

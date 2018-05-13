@@ -515,7 +515,7 @@ function onImageRendered (e) {
 
   context.setTransform(1, 0, 0, 1, 0, 0);
 
-  let color;
+  let color = toolColors.getToolColor();
   const lineWidth = toolStyle.getToolWidth();
   let fillColor = toolColors.getFillColor();
 
@@ -528,11 +528,14 @@ function onImageRendered (e) {
       continue;
     }
 
+    if (data.color) {
+      color = data.color;
+    }
+
     if (data.active) {
       color = toolColors.getActiveColor();
       fillColor = toolColors.getFillColor();
     } else {
-      color = toolColors.getToolColor();
       fillColor = toolColors.getToolColor();
     }
 
@@ -877,7 +880,8 @@ const freehand = {
   activate,
   deactivate,
   getConfiguration,
-  setConfiguration
+  setConfiguration,
+  isFreehandEndPoint
 };
 
 export { freehand };
