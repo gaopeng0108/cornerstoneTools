@@ -321,7 +321,7 @@ function onImageRendered (e) {
       const areaText = `Area: ${numberWithCommas(area.toFixed(2))}${suffix}`;
 
       // Add this text line to the array to be displayed in the textbox
-      textLines.push(areaText);
+      // textLines.push(areaText);
     }
 
     // If the textbox has not been moved by the user, it should be displayed on the right-most
