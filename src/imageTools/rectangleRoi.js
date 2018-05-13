@@ -264,15 +264,15 @@ function onImageRendered (e) {
       }
 
       // Calculate the image area from the ellipse dimensions and pixel spacing
-      area = (ellipse.width * (colPixelSpacing || 1)) * (ellipse.height * (rowPixelSpacing || 1));
+      // area = (ellipse.width * (colPixelSpacing || 1)) * (ellipse.height * (rowPixelSpacing || 1));
 
       // If the area value is sane, store it for later retrieval
-      if (!isNaN(area)) {
-        data.area = area;
-      }
+      // if (!isNaN(area)) {
+      //   data.area = area;
+      // }
 
       // Set the invalidated flag to false so that this data won't automatically be recalculated
-      data.invalidated = false;
+      // data.invalidated = false;
     }
 
     // Define an array to store the rows of text for the textbox
@@ -301,8 +301,8 @@ function onImageRendered (e) {
       }
 
       // Add these text lines to the array to be displayed in the textbox
-      textLines.push(meanText);
-      textLines.push(stdDevText);
+      // textLines.push(meanText);
+      // textLines.push(stdDevText);
     }
 
     // If the area is a sane value, display it
@@ -317,7 +317,7 @@ function onImageRendered (e) {
       }
 
       // Create a line of text to display the area and its units
-      const areaText = `Area: ${numberWithCommas(area.toFixed(2))}${suffix}`;
+      const areaText = `置信度: ${numberWithCommas(area.toFixed(2))}${suffix}`;
 
       // Add this text line to the array to be displayed in the textbox
       textLines.push(areaText);

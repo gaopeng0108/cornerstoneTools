@@ -31,6 +31,8 @@ let configuration = {
   currentTool: -1
 };
 
+let isEndPoint = false;
+
 function createNewMeasurement () {
   // Create the measurement data for this tool
   const measurementData = {
@@ -396,6 +398,7 @@ function getMouseLocation (eventData) {
 }
 
 function mouseDownCallback (e) {
+  isEndPoint = false;
   const eventData = e.detail;
   const element = eventData.element;
   const options = getToolOptions(toolType, element);
@@ -449,6 +452,7 @@ function mouseDownCallback (e) {
 
       // Snap if click registered on origin node or on last node placed
       if ((handleNearby === 0 || handleNearby === lastNodeID) && !freeHandIntersectEnd(toolData.data[currentTool].handles)) {
+        isEndPoint = true;
         endDrawing(eventData, handleNearby);
       } else if (eventData.event.shiftKey) {
         config.freehand = true;
@@ -467,6 +471,10 @@ function mouseDownCallback (e) {
     e.preventDefault();
     e.stopPropagation();
   }
+}
+
+function isFreehandEndPoint() {
+  return isEndPoint;
 }
 
 // /////// END ACTIVE TOOL ///////
@@ -687,8 +695,8 @@ function onImageRendered (e) {
       }
 
       // Add these text lines to the array to be displayed in the textbox
-      textLines.push(meanText);
-      textLines.push(stdDevText);
+      // textLines.push(meanText);
+      // textLines.push(stdDevText);
     }
 
     // If the area is a sane value, display it
@@ -706,7 +714,7 @@ function onImageRendered (e) {
       const areaText = `Area: ${numberWithCommas(area.toFixed(2))}${suffix}`;
 
       // Add this text line to the array to be displayed in the textbox
-      textLines.push(areaText);
+      // textLines.push(areaText);
     }
 
     // Only render text if polygon ROI has been completed and freehand 'shiftKey' mode was not used:
