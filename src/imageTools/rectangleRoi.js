@@ -323,7 +323,7 @@ function onImageRendered (e) {
       }
 
       // Create a line of text to display the area and its units
-      const areaText = `置信度: ${numberWithCommas(area.toFixed(2))}${suffix}`;
+      const areaText = `置信度: ${numberWithCommas(data.area.toFixed(2))}%`;
 
       // Add this text line to the array to be displayed in the textbox
       textLines.push(areaText);
