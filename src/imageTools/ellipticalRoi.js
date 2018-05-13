@@ -296,6 +296,7 @@ function onImageRendered (e) {
     }
 
     // If the area is a sane value, display it
+    area = data.area;
     if (area) {
       // Determine the area suffix based on the pixel spacing in the image.
       // If pixel spacing is present, use millimeters. Otherwise, use pixels.
@@ -307,7 +308,7 @@ function onImageRendered (e) {
       }
 
       // Create a line of text to display the area and its units
-      const areaText = `置信度: ${numberWithCommas(data.area.toFixed(2))}%`;
+      const areaText = `置信度: ${numberWithCommas(area.toFixed(2))}%`;
 
       // Add this text line to the array to be displayed in the textbox
       textLines.push(areaText);
