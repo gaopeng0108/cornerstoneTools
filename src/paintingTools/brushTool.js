@@ -55,7 +55,7 @@ export default function brushTool (brushToolInterface) {
     const eventData = e.detail;
     const element = eventData.element;
     const toolData = getToolState(element, TOOL_STATE_TOOL_TYPE);
-    console.log('toolData', toolData);
+    console.log('brushToolData', toolData);
     let pixelData;
 
     if (toolData && toolData.data[0]) {

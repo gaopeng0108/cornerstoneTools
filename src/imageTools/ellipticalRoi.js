@@ -104,6 +104,7 @@ function onImageRendered (e) {
 
   // If we have no toolData for this element, return immediately as there is nothing to do
   const toolData = getToolState(e.currentTarget, toolType);
+  console.log('ellipToolData', toolData);
 
   if (!toolData) {
     return;
