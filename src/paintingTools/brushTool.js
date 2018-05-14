@@ -51,14 +51,14 @@ export default function brushTool (brushToolInterface) {
     element.addEventListener(EVENTS.MOUSE_UP, mouseUpCallback);
   }
 
-  function onImageRendered (e, param) {
+  function onImageRendered (e) {
     const eventData = e.detail;
     const element = eventData.element;
     const toolData = getToolState(element, TOOL_STATE_TOOL_TYPE);
     let pixelData;
 
-    if (toolData && toolData.data[0] && param !== 'stop') {
-      console.log(param);
+    if (toolData && toolData.data[0]) {
+      console.log(e);
       pixelData = toolData.data[0].pixelData;
     } else {
       pixelData = new Uint8ClampedArray(eventData.image.width * eventData.image.height);
@@ -152,7 +152,7 @@ export default function brushTool (brushToolInterface) {
   }
 
   function deactivate (element) {
-    element.removeEventListener(EVENTS.IMAGE_RENDERED, onImageRendered, 'stop');
+    element.removeEventListener(EVENTS.IMAGE_RENDERED, onImageRendered);
     element.removeEventListener(EVENTS.MOUSE_DOWN_ACTIVATE, mouseDownActivateCallback);
     element.removeEventListener(EVENTS.MOUSE_MOVE, mouseMoveCallback);
   }
