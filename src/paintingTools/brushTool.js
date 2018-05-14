@@ -58,7 +58,7 @@ export default function brushTool (brushToolInterface) {
     let pixelData;
 
     if (toolData && toolData.data[0]) {
-      console.log('if')
+      console.log(e);
       pixelData = toolData.data[0].pixelData;
     } else {
       pixelData = new Uint8ClampedArray(eventData.image.width * eventData.image.height);
