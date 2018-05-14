@@ -104,7 +104,6 @@ function onImageRendered (e) {
 
   // If we have no toolData for this element, return immediately as there is nothing to do
   const toolData = getToolState(e.currentTarget, toolType);
-  console.log('toolData', toolData);
 
   if (!toolData) {
     return;
@@ -177,6 +176,7 @@ function onImageRendered (e) {
     context.beginPath();
     context.strokeStyle = color;
     context.lineWidth = lineWidth;
+    console.log('leftCanvas', leftCanvas, topCanvas, widthCanvas, heightCanvas);
     drawEllipse(context, leftCanvas, topCanvas, widthCanvas, heightCanvas);
     context.closePath();
 
