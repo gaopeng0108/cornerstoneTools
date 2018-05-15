@@ -62,6 +62,7 @@ function mouseDownCallback (e) {
 }
 
 function newImageCallback (e, eventData) {
+  console.log('eventData', eventData)
   eventData.currentPoints = currentPoints;
   drawMagnificationTool(eventData);
 }
