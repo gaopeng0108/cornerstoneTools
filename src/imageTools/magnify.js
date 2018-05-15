@@ -3,6 +3,9 @@ import external  from '../externalModules.js';
 import touchDragTool from './touchDragTool.js';
 import { getBrowserInfo } from '../util/getMaxSimultaneousRequests.js';
 import isMouseButtonEnabled from '../util/isMouseButtonEnabled.js';
+import { setToolOptions, getToolOptions } from '../toolOptions.js';
+
+const toolType = 'magnify';
 
 let configuration = {
   magnifySize: 100,
@@ -38,7 +41,9 @@ function mouseDownCallback (e) {
   const eventData = e.detail;
   const element = eventData.element;
 
-  if (isMouseButtonEnabled(eventData.which, e.data.mouseButtonMask)) {
+  const options = getToolOptions(toolType, element);
+
+  if (isMouseButtonEnabled(eventData.which, options.mouseButtonMask)) {
     element.addEventListener(EVENTS.MOUSE_DRAG, dragCallback);
     element.addEventListener(EVENTS.MOUSE_UP, mouseUpCallback);
     element.addEventListener(EVENTS.MOUSE_CLICK, mouseUpCallback);
@@ -205,7 +210,8 @@ function enable (element) {
   createMagnificationCanvas(element);
 }
 
-function activate (element) {
+function activate (element, mouseButtonMask) {
+  setToolOptions(toolType, element, { mouseButtonMask });
 
   element.removeEventListener(EVENTS.MOUSE_DOWN, mouseDownCallback);
 
