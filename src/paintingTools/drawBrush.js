@@ -19,7 +19,7 @@ function drawBrushOnCanvas (pointerArray, canvasContext, color, element) {
   const sizeY = canvasPtBR.y - canvasPtTL.y;
 
   canvasContext.save();
-  canvasContext.fillStyle = color;
+  canvasContext.fillStyle = 'white';
 
   pointerArray.forEach((point) => {
     const canvasPt = external.cornerstone.pixelToCanvas(element, {
