@@ -1,7 +1,7 @@
 import external from '../externalModules.js';
 import toolStyle from '../stateManagement/toolStyle.js';
 
-const handleRadius = 0;
+let handleRadius = 0;
 
 export default function (context, renderData, handles, color, options) {
   context.strokeStyle = color;
@@ -20,8 +20,10 @@ export default function (context, renderData, handles, color, options) {
     context.beginPath();
 
     if (handle.active) {
+      handleRadius = 3;
       context.lineWidth = toolStyle.getActiveWidth();
     } else {
+      handleRadius = 0;
       context.lineWidth = toolStyle.getToolWidth();
     }
 
