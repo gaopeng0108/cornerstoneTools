@@ -27,6 +27,7 @@ function drawBrushOnCanvas (pointerArray, canvasContext, color, element) {
       y: point[1]
     });
 
+    // 清除刚开始存在的点位
     // canvasContext.fillRect(canvasPt.x, canvasPt.y, sizeX, sizeY);
   });
 

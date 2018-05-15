@@ -35,7 +35,7 @@ function paint (eventData) {
 
   const pointerArray = getCircle(radius, rows, columns, x, y);
 
-  drawBrushPixels(pointerArray, pixelData, brushPixelValue, columns);
+  // drawBrushPixels(pointerArray, pixelData, brushPixelValue, columns);
 
   layer.invalid = true;
 

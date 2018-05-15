@@ -1,7 +1,7 @@
 import external from '../externalModules.js';
 import toolStyle from '../stateManagement/toolStyle.js';
 
-const handleRadius = 3;
+const handleRadius = 0;
 
 export default function (context, renderData, handles, color, options) {
   context.strokeStyle = color;
