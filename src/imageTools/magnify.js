@@ -1,20 +1,17 @@
 import EVENTS from '../events.js';
-import external from '../externalModules.js';
+import external  from '../externalModules.js';
+import touchDragTool from './touchDragTool.js';
 import { getBrowserInfo } from '../util/getMaxSimultaneousRequests.js';
 import isMouseButtonEnabled from '../util/isMouseButtonEnabled.js';
-import { setToolOptions, getToolOptions } from '../toolOptions.js';
-
-const toolType = 'magnify';
 
 let configuration = {
-  magnifySize: 300,
-  magnificationLevel: 5
+  magnifySize: 100,
+  magnificationLevel: 2
 };
 
 let browserName;
+
 let currentPoints;
-let zoomCanvas;
-let zoomElement;
 
 /** Remove the magnifying glass when the mouse event ends */
 function mouseUpCallback (e) {
@@ -24,6 +21,7 @@ function mouseUpCallback (e) {
   element.removeEventListener(EVENTS.MOUSE_DRAG, dragCallback);
   element.removeEventListener(EVENTS.MOUSE_UP, mouseUpCallback);
   element.removeEventListener(EVENTS.MOUSE_CLICK, mouseUpCallback);
+  element.removeEventListener(EVENTS.NEW_IMAGE, newImageCallback);
   hideTool(eventData);
 }
 
@@ -33,31 +31,23 @@ function hideTool (eventData) {
   element.querySelector('.magnifyTool').style.display = 'none';
   // Re-enable the mouse cursor
   document.body.style.cursor = 'default';
-  removeZoomElement();
 }
 
 /** Draw the magnifying glass on mouseDown, and begin tracking mouse movements */
 function mouseDownCallback (e) {
   const eventData = e.detail;
   const element = eventData.element;
-  const options = getToolOptions(toolType, element);
 
-  if (e.isTouchEvent || isMouseButtonEnabled(eventData.which, options.mouseButtonMask)) {
+  if (isMouseButtonEnabled(eventData.which, e.data.mouseButtonMask)) {
     element.addEventListener(EVENTS.MOUSE_DRAG, dragCallback);
-    element.addEventListener(EVENTS.TOUCH_DRAG, dragCallback);
     element.addEventListener(EVENTS.MOUSE_UP, mouseUpCallback);
-    element.addEventListener(EVENTS.TOUCH_END, mouseUpCallback);
     element.addEventListener(EVENTS.MOUSE_CLICK, mouseUpCallback);
 
+    currentPoints = eventData.currentPoints;
     element.addEventListener(EVENTS.NEW_IMAGE, newImageCallback);
+    drawMagnificationTool(eventData);
 
-    // Ignore until next event
-    drawZoomedElement(eventData);
-    // On next frame
-    window.requestAnimationFrame(() => drawMagnificationTool(eventData));
-
-    e.preventDefault();
-    e.stopPropagation();
+    return false; // False = causes jquery to preventDefault() and stopPropagation() this event
   }
 }
 
@@ -88,20 +78,16 @@ function dragCallback (e) {
     element.addEventListener(EVENTS.TOUCH_END, dragEndCallback);
   }
 
-  e.preventDefault();
-  e.stopPropagation();
+  return false; // False = causes jquery to preventDefault() and stopPropagation() this event
 }
 
+/** Draws the magnifying glass */
 function drawMagnificationTool (eventData) {
   const element = eventData.element;
   const magnifyCanvas = element.querySelector('.magnifyTool');
 
   if (!magnifyCanvas) {
     createMagnificationCanvas(eventData.element);
-  }
-
-  if (zoomCanvas === undefined) {
-    return;
   }
 
   const config = magnify.getConfiguration();
@@ -120,15 +106,17 @@ function drawMagnificationTool (eventData) {
 
   zoomCtx.setTransform(1, 0, 0, 1, 0, 0);
 
-  const getSize = magnifySize;
+  const getSize = magnifySize / magnificationLevel;
 
   // Calculate the on-canvas location of the mouse pointer / touch
   const canvasLocation = external.cornerstone.pixelToCanvas(eventData.element, eventData.currentPoints.image);
 
+  if (eventData.isTouchEvent === true) {
+    canvasLocation.y -= 1.25 * getSize;
+  }
 
   canvasLocation.x = Math.max(canvasLocation.x, 0);
   canvasLocation.x = Math.min(canvasLocation.x, canvas.width);
-
   canvasLocation.y = Math.max(canvasLocation.y, 0);
   canvasLocation.y = Math.min(canvasLocation.y, canvas.height);
 
@@ -140,8 +128,8 @@ function drawMagnificationTool (eventData) {
   zoomCtx.fillRect(0, 0, magnifySize, magnifySize);
 
   const copyFrom = {
-    x: canvasLocation.x * magnificationLevel - 0.5 * getSize,
-    y: canvasLocation.y * magnificationLevel - 0.5 * getSize
+    x: canvasLocation.x - 0.5 * getSize,
+    y: canvasLocation.y - 0.5 * getSize
   };
 
   if (browserName === 'Safari') {
@@ -151,19 +139,18 @@ function drawMagnificationTool (eventData) {
     copyFrom.y = Math.max(copyFrom.y, 0);
   }
 
-  copyFrom.x = Math.min(copyFrom.x, zoomCanvas.width);
-  copyFrom.y = Math.min(copyFrom.y, zoomCanvas.height);
+  copyFrom.x = Math.min(copyFrom.x, canvas.width);
+  copyFrom.y = Math.min(copyFrom.y, canvas.height);
 
-  zoomCtx.drawImage(zoomCanvas, copyFrom.x, copyFrom.y, getSize, getSize, 0, 0, getSize, getSize);
+  const scaledMagnify = {
+    x: (canvas.width - copyFrom.x) * magnificationLevel,
+    y: (canvas.height - copyFrom.y) * magnificationLevel
+  };
+  zoomCtx.drawImage(canvas, copyFrom.x, copyFrom.y, canvas.width - copyFrom.x, canvas.height - copyFrom.y, 0, 0, scaledMagnify.x, scaledMagnify.y);
 
   // Place the magnification tool at the same location as the pointer
   magnifyCanvas.style.top = `${canvasLocation.y - 0.5 * magnifySize}px`;
   magnifyCanvas.style.left = `${canvasLocation.x - 0.5 * magnifySize}px`;
-
-  if (eventData.isTouchEvent) {
-    magnifyCanvas.style.top = `${canvasLocation.y - 0.5 * magnifySize - 120}px`;
-  }
-
 
   magnifyCanvas.style.display = 'block';
 
@@ -171,15 +158,14 @@ function drawMagnificationTool (eventData) {
   document.body.style.cursor = 'none';
 }
 
-
 /** Creates the magnifying glass canvas */
 function createMagnificationCanvas (element) {
   // If the magnifying glass canvas doesn't already exist
   if (element.querySelector('.magnifyTool') === null) {
     // Create a canvas and append it as a child to the element
     const magnifyCanvas = document.createElement('canvas');
-
     // The magnifyTool class is used to find the canvas later on
+
     magnifyCanvas.classList.add('magnifyTool');
 
     const config = magnify.getConfiguration();
@@ -189,7 +175,6 @@ function createMagnificationCanvas (element) {
 
     // Make sure position is absolute so the canvas can follow the mouse / touch
     magnifyCanvas.style.position = 'absolute';
-    magnifyCanvas.style.display = 'none';
     element.appendChild(magnifyCanvas);
   }
 }
@@ -203,47 +188,6 @@ function removeMagnificationCanvas (element) {
   }
 }
 
-function drawZoomedElement (eventData) {
-  removeZoomElement();
-  let enabledElement = eventData.enabledElement;
-
-  if (enabledElement === undefined) {
-    enabledElement = external.cornerstone.getEnabledElement(eventData.element);
-  }
-  const config = magnify.getConfiguration();
-
-  const magnificationLevel = config.magnificationLevel;
-  const origCanvas = enabledElement.canvas;
-  const image = enabledElement.image;
-
-  zoomElement = document.createElement('div');
-
-  zoomElement.width = origCanvas.width * magnificationLevel;
-  zoomElement.height = origCanvas.height * magnificationLevel;
-  external.cornerstone.enable(zoomElement);
-
-  const zoomEnabledElement = external.cornerstone.getEnabledElement(zoomElement);
-  const viewport = external.cornerstone.getViewport(enabledElement.element);
-
-  zoomCanvas = zoomEnabledElement.canvas;
-  zoomCanvas.width = origCanvas.width * magnificationLevel;
-  zoomCanvas.height = origCanvas.height * magnificationLevel;
-
-  zoomEnabledElement.viewport = Object.assign({}, viewport);
-
-  viewport.scale *= magnificationLevel;
-  external.cornerstone.displayImage(zoomElement, image);
-  external.cornerstone.setViewport(zoomElement, viewport);
-}
-
-function removeZoomElement () {
-  if (zoomElement !== undefined) {
-    external.cornerstone.disable(zoomElement);
-    zoomElement = undefined;
-    zoomCanvas = undefined;
-  }
-}
-
 // --- Mouse tool activate / disable --- //
 function disable (element) {
   element.removeEventListener(EVENTS.MOUSE_DOWN, mouseDownCallback);
@@ -251,8 +195,6 @@ function disable (element) {
 }
 
 function enable (element) {
-  const config = magnify.getConfiguration(config);
-
   if (!browserName) {
     const infoString = getBrowserInfo();
     const info = infoString.split(' ');
@@ -263,12 +205,11 @@ function enable (element) {
   createMagnificationCanvas(element);
 }
 
-function activate (element, mouseButtonMask) {
-  setToolOptions(toolType, element, { mouseButtonMask });
+function activate (element) {
 
   element.removeEventListener(EVENTS.MOUSE_DOWN, mouseDownCallback);
 
-  element.addEventListener(EVENTS.MOUSE_DOWN, mouseDownCallback);
+  element.addEventListener(EVENTS.MOUSE_DOWN, mouseDownCallback)
   createMagnificationCanvas(element);
 }
 
@@ -291,22 +232,13 @@ const magnify = {
   setConfiguration
 };
 
-function enableTouch (element) {
-  element.removeEventListener(EVENTS.TOUCH_START, mouseDownCallback);
-  element.addEventListener(EVENTS.TOUCH_START, mouseDownCallback);
-}
-
-// Disables the reference line tool for the given element
-function disableTouch (element) {
-  element.removeEventListener(EVENTS.TOUCH_START, mouseDownCallback);
-}
-
-const magnifyTouchDrag = {
-  activate: enableTouch,
-  deactivate: disableTouch,
-  enable: enableTouch,
-  disable: disableTouch
+const options = {
+  fireOnTouchStart: true,
+  activateCallback: createMagnificationCanvas,
+  disableCallback: removeMagnificationCanvas
 };
+
+const magnifyTouchDrag = touchDragTool(dragCallback, options);
 
 export {
   magnify,
